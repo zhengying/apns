@@ -2,6 +2,10 @@ package apns
 
 import (
 	"crypto/tls"
+	"encoding/base64"
+	"encoding/pem"
+	"fmt"
+	"io/ioutil"
 	"net"
 	"time"
 )
@@ -18,6 +22,46 @@ type Client struct {
 	CertificateBase64 string
 	KeyFile           string
 	KeyBase64         string
+}
+
+func ComboPEMClient(gateway, comboPEMFile string) (c *Client) {
+
+	content, err := ioutil.ReadFile(comboPEMFile)
+
+	if err != nil {
+		fmt.Errorf("file read error", err)
+		return
+	}
+
+	var certblock *pem.Block
+	var keyblock *pem.Block
+
+	certblock, content = pem.Decode(content)
+
+	if certblock == nil {
+		fmt.Errorf("no cert found")
+		return
+	}
+
+	if len(content) == 0 {
+		fmt.Errorf("no key")
+		return
+	}
+
+	keyblock, content = pem.Decode(content)
+
+	if err != nil {
+		fmt.Errorf("no vaild key found")
+		return
+	}
+
+	cert_pem := base64.StdEncoding.EncodeToString(certblock.Bytes)
+	key_pem := base64.StdEncoding.EncodeToString(keyblock.Bytes)
+
+	cert_pem = fmt.Sprintf("-----BEGIN CERTIFICATE-----\n%s\n-----END CERTIFICATE-----\n", cert_pem)
+	key_pem = fmt.Sprintf("-----BEGIN RSA PRIVATE KEY-----\n%s\n-----END RSA PRIVATE KEY-----\n", key_pem)
+
+	return BareClient(gateway, cert_pem, key_pem)
 }
 
 // Constructor. Use this if you want to set cert and key blocks manually.
@@ -77,6 +121,7 @@ func (this *Client) ConnectAndWrite(resp *PushNotificationResponse, payload []by
 	if len(this.CertificateBase64) == 0 && len(this.KeyBase64) == 0 {
 		// The user did not specify raw block contents, so check the filesystem.
 		cert, err = tls.LoadX509KeyPair(this.CertificateFile, this.KeyFile)
+
 	} else {
 		// The user provided the raw block contents, so use that.
 		cert, err = tls.X509KeyPair([]byte(this.CertificateBase64), []byte(this.KeyBase64))
