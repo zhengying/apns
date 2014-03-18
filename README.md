@@ -1,3 +1,34 @@
+
+#modify:
+
+add ComboPEMClient use combo pem file (cert & key in one pem)
+
+
+```
+	pemfile := "your/combo/pem/file"
+
+	payload := apns.NewPayload()
+	payload.Alert = "Hello, world!"
+	payload.Badge = 42
+	payload.Sound = "bingbong.aiff"
+
+	pn := apns.NewPushNotification()
+	pn.DeviceToken = "your device token"
+	pn.AddPayload(payload)
+
+	client := apns.ComboPEMClient("gateway.sandbox.push.apple.com:2195", pemfile)
+
+	resp := client.Send(pn)
+
+	alert, _ := pn.PayloadString()
+	fmt.Println("  Alert:", alert)
+	fmt.Println("Success:", resp.Success)
+	fmt.Println("  Error:", resp.Error)
+	
+```
+
+
+---
 # apns
 
 Utilities for Apple Push Notification and Feedback Services.
