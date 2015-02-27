@@ -132,7 +132,8 @@ func (this *Client) ConnectAndWrite(resp *PushNotificationResponse, payload []by
 	}
 
 	conf := &tls.Config{
-		Certificates: []tls.Certificate{cert},
+		Certificates:       []tls.Certificate{cert},
+		InsecureSkipVerify: true, // add for error
 	}
 
 	conn, err := net.Dial("tcp", this.Gateway)
