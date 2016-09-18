@@ -25,9 +25,10 @@ const IDENTIFIER_UBOUND = 9999
 // Alert is an interface here because it supports either a string
 // or a dictionary, represented within by an AlertDictionary struct.
 type Payload struct {
-	Alert interface{} `json:"alert,omitempty"`
-	Badge int         `json:"badge,omitempty"`
-	Sound string      `json:"sound,omitempty"`
+	Alert 				interface{} `json:"alert,omitempty"`
+	Badge 				int         `json:"badge,omitempty"`
+	Sound 				string      `json:"sound,omitempty"`
+	ContentAvailable 	int      	`json:"content-available,omitempty"`
 }
 
 // Constructor.
@@ -85,6 +86,12 @@ func (this *PushNotification) AddPayload(p *Payload) {
 		p.Badge = -1
 	}
 	this.Set("aps", p)
+}
+
+func (this *PushNotification) AddData(value interface{}) {
+	this.Set("acme1", "Bar")
+	this.Set("acme2", 42)
+	this.Set("message", value)
 }
 
 func (this *PushNotification) Get(key string) interface{} {
